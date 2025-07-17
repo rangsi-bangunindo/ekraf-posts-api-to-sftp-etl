@@ -22,13 +22,13 @@ def save_to_csv(data, filename=None):
         writer = csv.DictWriter(
             file,
             fieldnames=data[0].keys(),
-            delimiter=";",
+            delimiter=",",
             quoting=csv.QUOTE_MINIMAL
         )
         writer.writeheader()
         writer.writerows(data)
 
-    return filepath  # So we can upload it
+    return filepath  # Path to upload
 
 def remote_path_exists(sftp, path):
     try:
@@ -67,7 +67,6 @@ def upload_to_sftp(local_file_path, remote_path=None):
 
     sftp.put(local_file_path, remote_path)
     print(f"File uploaded successfully to: {remote_path}")
-    print(f"Uploaded file is available at: /uploads/{os.path.basename(local_file_path)}")
 
     sftp.close()
     transport.close()
