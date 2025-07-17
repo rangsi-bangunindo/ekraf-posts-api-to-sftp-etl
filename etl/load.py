@@ -1,7 +1,7 @@
 import csv
 import os
-from datetime import datetime
 import paramiko
+from datetime import datetime
 from etl.config import SFTP_CONFIG, DATA_DIR
 
 def save_to_csv(data, filename=None):
@@ -25,23 +25,45 @@ def save_to_csv(data, filename=None):
 
     return filepath  # So we can upload it
 
-def upload_to_sftp(local_file_path, remote_filename=None):
+def remote_path_exists(sftp, path):
+    try:
+        sftp.stat(path)
+        return True
+    except FileNotFoundError:
+        return False
+
+def upload_to_sftp(local_file_path, remote_path=None):
     """
     Uploads a local file to the specified SFTP server.
+    If remote_path is not provided, uploads to /uploads/filename.csv.
     """
     sftp_host = SFTP_CONFIG["host"]
     sftp_port = SFTP_CONFIG["port"]
     sftp_user = SFTP_CONFIG["username"]
     sftp_pass = SFTP_CONFIG["password"]
 
-    if not remote_filename:
-        remote_filename = os.path.basename(local_file_path)
+    filename = os.path.basename(local_file_path)
+    if not remote_path:
+        remote_path = f"/uploads/{filename}"
 
     transport = paramiko.Transport((sftp_host, sftp_port))
     transport.connect(username=sftp_user, password=sftp_pass)
 
     sftp = paramiko.SFTPClient.from_transport(transport)
-    sftp.put(local_file_path, remote_filename)
+
+    remote_dir = os.path.dirname(remote_path)
+    if remote_path_exists(sftp, remote_dir):
+        print(f"Remote directory exists: {remote_dir}")
+        print("Remote contents:", sftp.listdir(remote_dir))
+    else:
+        print(f"Remote directory does not exist: {remote_dir}")
+        sftp.close()
+        transport.close()
+        return  # Skip upload
+
+    sftp.put(local_file_path, remote_path)
+    print(f"File uploaded successfully to: {remote_path}")
+    print(f"Uploaded file is available at: /uploads/{os.path.basename(local_file_path)}")
 
     sftp.close()
     transport.close()
