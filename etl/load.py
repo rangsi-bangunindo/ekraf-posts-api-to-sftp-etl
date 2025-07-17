@@ -19,7 +19,12 @@ def save_to_csv(data, filename=None):
         raise ValueError("No data to write.")
 
     with open(filepath, mode="w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=data[0].keys())
+        writer = csv.DictWriter(
+            file,
+            fieldnames=data[0].keys(),
+            delimiter=";",
+            quoting=csv.QUOTE_MINIMAL
+        )
         writer.writeheader()
         writer.writerows(data)
 
@@ -54,7 +59,6 @@ def upload_to_sftp(local_file_path, remote_path=None):
     remote_dir = os.path.dirname(remote_path)
     if remote_path_exists(sftp, remote_dir):
         print(f"Remote directory exists: {remote_dir}")
-        print("Remote contents:", sftp.listdir(remote_dir))
     else:
         print(f"Remote directory does not exist: {remote_dir}")
         sftp.close()
