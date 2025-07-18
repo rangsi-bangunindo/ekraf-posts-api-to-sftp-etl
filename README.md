@@ -113,7 +113,7 @@ Run tests with:
 pytest -v
 ```
 
-Test discovery is managed via pytest.ini, targeting the tests/ directory.
+Test discovery is managed via `pytest.ini`, targeting the `tests/` directory.
 
 ---
 
