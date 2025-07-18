@@ -1,7 +1,7 @@
 def transform_posts(raw_posts):
     """
     Transforms raw post data into a flat structure for CSV export.
-    Returns a list of dictionaries with the desired schema.
+    Returns a list of dictionaries with the expected schema.
     """
     transformed = []
 

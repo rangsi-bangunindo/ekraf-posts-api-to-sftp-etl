@@ -15,7 +15,7 @@ def run_etl():
     transformed_posts = transform_posts(raw_posts)
     print(f"Transformed {len(transformed_posts)} posts.")
 
-    # Load - save to CSV
+    # Load and save to CSV
     print("Saving transformed posts to CSV...")
     csv_path = save_to_csv(transformed_posts)
     print(f"Saved CSV to: {csv_path}")

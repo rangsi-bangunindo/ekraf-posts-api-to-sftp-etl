@@ -12,35 +12,26 @@ class MockResponse:
     def raise_for_status(self):
         if self.status_code >= 400:
             raise Exception(f"HTTP {self.status_code}")
-        
+
 @patch("etl.extract.requests.get")
-def test_fetch_posts(mock_get):
-    # Simulate page 1
+def test_fetch_posts(mock_get, sample_raw_posts):
+    # Simulate paginated responses (e.g., 5 per page)
+    page1 = sample_raw_posts.copy()
+    page1["data"] = sample_raw_posts["data"][:5]
+    page1["pagination"]["total_pages"] = 2
+
+    page2 = sample_raw_posts.copy()
+    page2["data"] = sample_raw_posts["data"][5:]
+    page2["pagination"]["total_pages"] = 2
+
     mock_get.side_effect = [
-        MockResponse({
-            "status": "success",
-            "message": "Data fetched",
-            "data": [
-                {"id": 1, "title": "Post 1", "excerpt": "Summary 1"},
-                {"id": 2, "title": "Post 2", "excerpt": "Summary 2"}
-            ],
-            "pagination": {"total_pages": 2}
-        }),
-        # Simulate page 2
-        MockResponse({
-            "data": [
-                {"id": 3, "title": "Post 3", "excerpt": "Summary 3"}
-            ],
-            "pagination": {"total_pages": 2}
-        }),
-        # Simulate empty third page (should not happen, but just in case)
-        MockResponse({"data": [], "pagination": {"total_pages": 2}})
+        MockResponse(page1),
+        MockResponse(page2)
     ]
 
     result = fetch_posts()
-    
+
     assert isinstance(result, list)
-    assert len(result) == 3
-    assert result[0]["id"] == 1
-    assert result[2]["title"] == "Post 3"   
-    
+    assert len(result) == len(sample_raw_posts["data"])
+    assert result[0]["id"] == sample_raw_posts["data"][0]["id"]
+    assert result[-1]["id"] == sample_raw_posts["data"][-1]["id"]

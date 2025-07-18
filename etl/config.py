@@ -1,11 +1,11 @@
 # EKRAF API configuration
 API_URL = "https://api.ekraf.go.id/posts"
-DEFAULT_PAGE_SIZE = 100  # Max results per request (if API supports it)
+DEFAULT_PAGE_SIZE = 100  # Max results per request
 
 # Local file settings
 CSV_FILENAME = "ekraf_posts.csv"
 DATA_DIR = "data/"
-CSV_OUTPUT_PATH = DATA_DIR + CSV_FILENAME  # Saved under the data/ folder
+CSV_OUTPUT_PATH = DATA_DIR + CSV_FILENAME
 
 # SFTP configuration
 SFTP_HOST = "5.189.154.248"
@@ -13,7 +13,7 @@ SFTP_PORT = 22
 SFTP_USERNAME = "rangsi"
 SFTP_PASSWORD = "Passwd093"
 
-# Remote SFTP path (optional, can customize where to upload the CSV)
+# Remote SFTP path to upload the CSV
 SFTP_REMOTE_PATH = "/home/rangsi/" + CSV_FILENAME
 
 SFTP_CONFIG = {
