@@ -18,7 +18,7 @@ def save_to_csv(data, filename=None):
     if not data:
         raise ValueError("No data to write.")
 
-    with open(filepath, mode="w", encoding="utf-8", newline="") as file:
+    with open(filepath, mode="w", encoding="utf-8-sig", newline="") as file:
         writer = csv.DictWriter(
             file,
             fieldnames=data[0].keys(),
@@ -49,7 +49,8 @@ def upload_to_sftp(local_file_path, remote_path=None):
 
     filename = os.path.basename(local_file_path)
     if not remote_path:
-        remote_path = f"/uploads/{filename}"
+        remote_dir = SFTP_CONFIG["remote_dir"]
+        remote_path = f"{remote_dir}/{filename}"
 
     transport = paramiko.Transport((sftp_host, sftp_port))
     transport.connect(username=sftp_user, password=sftp_pass)

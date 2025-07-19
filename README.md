@@ -17,29 +17,30 @@ A modular ETL pipeline that automates the extraction of publication posts from t
 
 ## 2. Project Structure
 
-```
+```text
 ekraf-posts-api-to-sftp-etl/
 ├── data/
 │   └── ekraf_posts_<TIMESTAMP>.csv     # Output directory for timestamped CSV files
 ├── etl/
-│   ├── init.py
-│   ├── config.py                       # Stores API endpoint, output path, and SFTP credentials
-│   ├── extract.py                      # Contains functions to fetch and paginate API data
-│   ├── transform.py                    # Handles normalization and flattening of nested JSON fields
+│   ├── __init__.py
+│   ├── config.py                       # Loads configuration from .env and defines constants
+│   ├── extract.py                      # Functions to fetch and paginate API data
+│   ├── transform.py                    # Normalizes and flattens nested JSON fields
 │   └── load.py                         # Handles CSV writing and SFTP file upload
 ├── scripts/
-│   ├── init.py
-│   └── run_etl.py                      # Main runner script to execute the ETL pipeline
+│   ├── __init__.py
+│   └── run_etl.py                      # Main script to execute the ETL pipeline
 ├── tests/
-│   ├── init.py
+│   ├── __init__.py
 │   ├── conftest.py                     # Shared fixtures for unit tests
-│   ├── test_extract.py                 # Unit tests for the extraction logic
+│   ├── test_input.json                 # Sample API response for testing
+│   ├── test_extract.py                 # Unit tests for extraction logic
 │   ├── test_transform.py               # Unit tests for data transformation
-│   ├── test_load.py                    # Unit tests for CSV generation and SFTP upload
-│   └── test_input.json                 # Sample API response used in tests
+│   └── test_load.py                    # Unit tests for CSV generation and SFTP upload
+├── .env                                # Environment-specific configuration
+├── .gitignore                          # Specifies files/folders to ignore in version control
 ├── pytest.ini                          # Pytest configuration file
 ├── requirements.txt                    # Lists required Python packages
-├── .gitignore                          # Specifies files/folders to ignore in version control
 └── README.md                           # Project documentation
 ```
 
@@ -47,53 +48,52 @@ ekraf-posts-api-to-sftp-etl/
 
 ## 3. Installation
 
-### `Clone the Repository`
+1. **Clone the Repository**
 
-```bash
-git clone https://github.com/rangsi-bangunindo/ekraf-posts-api-to-sftp-etl.git
-cd ekraf-posts-api-to-sftp-etl
-```
+   ```bash
+   git clone https://github.com/rangsi-bangunindo/ekraf-posts-api-to-sftp-etl.git
+   cd ekraf-posts-api-to-sftp-etl
+   ```
 
-### `Create a Virtual Environment`
+2. **Create a Virtual Environment**
 
-```bash
-python -m venv .venv
-```
+   ```bash
+   python -m venv .venv
+   ```
 
-### `Activate the Virtual Environment`
+3. **Activate the Virtual Environment**
 
-- On **Windows**:
+   - On **Windows**:
 
-```bash
-.venv\Scripts\activate
-```
+     ```bash
+     .venv\Scripts\activate
+     ```
 
-- On **macOS/Linux**:
+   - On **macOS/Linux**:
 
-```bash
-source .venv/bin/activate
-```
+     ```bash
+     source .venv/bin/activate
+     ```
 
-### `Install Dependencies`
+4. **Install Dependencies**
 
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### `Configure the Project`
+5. **Set Up Environment Variables**
 
-Edit the following values in `etl/config.py`:
+   Create a `.env` file in the project root with the following variables:
 
-```python
-API_URL = "https://api.ekraf.go.id/posts"
-CSV_FILENAME = "ekraf_posts.csv"
-DATA_DIR = "data/"
-SFTP_HOST = "<sftp_host>"
-SFTP_PORT = 22
-SFTP_USERNAME = "<username>"
-SFTP_PASSWORD = "<password>"
-SFTP_REMOTE_PATH = "remote/path/" + CSV_FILENAME
-```
+   ```env
+   SFTP_HOST=<your_sftp_host>
+   SFTP_PORT=22
+   SFTP_USERNAME=<your_sftp_username>
+   SFTP_PASSWORD=<your_sftp_password>
+   SFTP_REMOTE_DIR=/uploads
+   ```
+
+   > `SFTP_REMOTE_DIR` must be an existing directory on the remote server. The uploaded CSV filename is generated dynamically based on the current timestamp.
 
 ---
 
@@ -119,13 +119,20 @@ Test discovery is managed via `pytest.ini`, targeting the `tests/` directory.
 
 ## 5. Run the ETL Process
 
-Trigger the full ETL pipeline with:
+Execute the full ETL pipeline:
 
 ```bash
 python -m scripts.run_etl
 ```
 
-Ensure configuration values in `etl/config.py` are properly set (API URL, SFTP credentials, output path) before execution.
+The script will:
+
+1. Extract data from the EKRAF API.
+2. Transform and flatten the structure.
+3. Save results as a timestamped CSV in `data/`.
+4. Upload the CSV file to the remote SFTP server in the specified `/uploads` directory.
+
+Configuration is automatically loaded from `.env` through `etl/config.py`.
 
 ---
 
@@ -168,3 +175,33 @@ Each ETL stage includes targeted error handling to improve fault tolerance and t
 - **Loading**: Captures file I/O errors (e.g., write permissions, disk space) and SFTP issues (e.g., connection timeouts, auth failures via `paramiko`).
 
 All logs are printed to the console with contextual details. Fatal errors terminate the pipeline early with clear messages to prevent silent data loss or partial transfers.
+
+---
+
+## 8. Opening the CSV in Excel
+
+The exported CSV uses `utf-8-sig` encoding to preserve special characters (e.g., avoiding `—` becoming `â€`) and `csv.QUOTE_MINIMAL` quoting to avoid unnecessary quotation marks.
+
+### Why Excel May Break the Format
+
+- The CSV uses commas (`,`) as delimiters and contains semicolons (`;`) inside field values.
+- Excel may incorrectly split fields like `"Creative; Digital"` due to the system’s **List Separator** setting, which often defaults to semicolon in certain regions.
+
+Using **Text to Columns** with a comma delimiter may result in data loss.
+
+### Recommended Way to Import
+
+1. Go to **Data** → **From Text/CSV**.
+2. Select the file.
+3. In the import dialog:
+   - Set **File Origin** to `65001: Unicode (UTF-8)`.
+   - Set **Delimiter** to **Comma**.
+   - Click **Load**.
+
+### Optional Cleanup
+
+- Clear table formatting via **Table Design** → **Clear**.
+- Remove query connections via **Query** → **Delete**, then close the **Queries & Connections** pane.
+- Toggle **Filter** in **Sort & Filter** to disable auto-filters.
+
+> Alternatively, the file can be opened directly in Google Sheets without formatting issues.

@@ -9,11 +9,11 @@ def test_save_to_csv_with_sample_data(sample_raw_posts, tmp_path):
 
     assert output_file.exists()
 
-    with output_file.open(newline='', encoding='utf-8') as f:
+    with output_file.open(newline='', encoding='utf-8-sig') as f:
         reader = list(csv.DictReader(f))
 
     assert len(reader) == 10
-    assert reader[0]["title"] == "Wamen Ekraf Dukung Pengembang Gim Horor Lokal: “IP Ini Punya Potensi Lintas Industri"
+    assert reader[0]["title"] == "Kementerian Ekraf dan CAKAP Latih UMKM Kreatif: Perkuat Talenta, Dorong Transformasi Ekonomi Digital"
     assert reader[0]["user_name"] == "Fachri Wahyudi"
-    assert reader[1]["title"] == "Kementerian Ekraf Dukung Film Rangga & Cinta Tembus Pasar Global"
+    assert reader[1]["title"] == "Wamen Ekraf Dukung Semangat Kolektif Produk Lokal di The Local Market Edisi Langit Lokal"
     assert reader[1]["user_email"] == "fachriwahyudi@ekraf.go.id"

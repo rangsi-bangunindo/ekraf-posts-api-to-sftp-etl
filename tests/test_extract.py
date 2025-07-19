@@ -15,7 +15,7 @@ class MockResponse:
 
 @patch("etl.extract.requests.get")
 def test_fetch_posts(mock_get, sample_raw_posts):
-    # Simulate paginated responses (e.g., 5 per page)
+    # Simulate paginated responses
     page1 = sample_raw_posts.copy()
     page1["data"] = sample_raw_posts["data"][:5]
     page1["pagination"]["total_pages"] = 2
